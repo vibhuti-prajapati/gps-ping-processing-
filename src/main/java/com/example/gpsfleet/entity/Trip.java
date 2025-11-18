@@ -1,11 +1,16 @@
 package com.example.gpsfleet.entity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.Instant;
 //CREATE TABLE trip (
 //        trip_id BIGINT AUTO_INCREMENT PRIMARY KEY,
 //        vehicle_id BIGINT NOT NULL,
 //        driver_id BIGINT NULL,
-//        device_id VARCHAR(64) NOT NULL,
+//        deviceId VARCHAR(64) NOT NULL,
 //start_time TIMESTAMP NOT NULL,
 //end_time TIMESTAMP NULL,
 //start_lat DECIMAL(10,7),
@@ -21,9 +26,13 @@ import java.time.Instant;
 //REFERENCES vehicle(vehicle_id),
 //CONSTRAINT fk_trip_driver FOREIGN KEY (driver_id)
 //REFERENCES driver(driver_id),
-//CONSTRAINT fk_trip_device FOREIGN KEY (device_id)
-//REFERENCES device(device_id)
+//CONSTRAINT fk_trip_device FOREIGN KEY (deviceId)
+//REFERENCES device(deviceId)
 //);
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name="trip")
 public class Trip {

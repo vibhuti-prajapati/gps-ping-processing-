@@ -1,21 +1,30 @@
 package com.example.gpsfleet.entity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.Instant;
 //CREATE TABLE gps_ping (
 //        ping_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-//        device_id VARCHAR(64) NOT NULL,
+//        deviceId VARCHAR(64) NOT NULL,
 //lat DECIMAL(10,7) NOT NULL,
 //lon DECIMAL(10,7) NOT NULL,
-//speed_kmh DECIMAL(6,2),
+//speedKmh DECIMAL(6,2),
 //heading DECIMAL(6,2),
-//sent_at TIMESTAMP NOT NULL,
+//sentAt TIMESTAMP NOT NULL,
 //received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 //created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 //
-//CONSTRAINT fk_ping_device FOREIGN KEY (device_id)
-//REFERENCES device(device_id)
+//CONSTRAINT fk_ping_device FOREIGN KEY (deviceId)
+//REFERENCES device(deviceId)
 //);
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "gps_ping")
 public class GpsPing {

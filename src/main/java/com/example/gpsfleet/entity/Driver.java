@@ -1,5 +1,10 @@
 package com.example.gpsfleet.entity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.Instant;
 
 //CREATE TABLE driver (
@@ -9,7 +14,10 @@ import java.time.Instant;
 //license_no VARCHAR(64),
 //created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 //);
-
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name="driver")
 public class Driver {

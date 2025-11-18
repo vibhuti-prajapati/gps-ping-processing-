@@ -1,6 +1,10 @@
 package com.example.gpsfleet.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 
@@ -18,7 +22,10 @@ import java.time.Instant;
 //CONSTRAINT fk_vehicle_driver FOREIGN KEY (driver_id)
 //REFERENCES driver(driver_id)
 //);
-
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name= "vehicle")
 public class Vehicle {

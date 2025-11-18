@@ -1,5 +1,10 @@
 package com.example.gpsfleet.entity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.Instant;
 //CREATE TABLE alert (
 //        alert_id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -15,7 +20,10 @@ import java.time.Instant;
 //CONSTRAINT fk_alert_ping FOREIGN KEY (ping_id)
 //REFERENCES gps_ping(ping_id)
 //);
-
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "alert")
 public class Alert {

@@ -3,7 +3,7 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 //CREATE TABLE device (
-//        device_id VARCHAR(64) PRIMARY KEY,
+//        deviceId VARCHAR(64) PRIMARY KEY,
 //imei VARCHAR(64) UNIQUE,
 //vehicle_id BIGINT NOT NULL,
 //active BOOLEAN DEFAULT TRUE,

@@ -1,5 +1,9 @@
 package com.example.gpsfleet.entity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 
@@ -15,7 +19,10 @@ import java.time.Instant;
 //CONSTRAINT fk_event_trip FOREIGN KEY (trip_id)
 //REFERENCES trip(trip_id)
 //);
-
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name="trip_event")
 public class TripEvent {
