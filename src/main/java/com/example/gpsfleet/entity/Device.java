@@ -1,5 +1,9 @@
 package com.example.gpsfleet.entity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 //CREATE TABLE device (
@@ -12,7 +16,10 @@ import java.time.Instant;
 //CONSTRAINT fk_device_vehicle FOREIGN KEY (vehicle_id)
 //REFERENCES vehicle(vehicle_id)
 //);
-
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name= "device")
 public class Device {

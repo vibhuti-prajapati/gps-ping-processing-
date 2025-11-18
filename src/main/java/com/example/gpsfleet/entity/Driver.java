@@ -1,4 +1,5 @@
 package com.example.gpsfleet.entity;
+import com.example.gpsfleet.dto.request.CreateDriverDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -37,4 +38,9 @@ public class Driver {
     @Column(name= "created_at")
     private Instant createdAt=Instant.now();
 
+    public Driver(CreateDriverDto dto) {
+        this.name = dto.name();
+        this.phone = dto.phone();
+        this.licenseNo = dto.licenseNo();
+    }
 }

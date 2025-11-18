@@ -36,14 +36,11 @@ public class PingServiceImpl implements PingService {
     @Override
     @Transactional
     public PingResponseDto ingestPing(PingRequestDto dto) {
-// 1. Validate device
         Optional<Device> deviceOpt = deviceRepository.findById(dto.deviceId());
         if (deviceOpt.isEmpty()) {
             throw new IllegalArgumentException("Unknown deviceId: " + dto.deviceId());
         }
 
-
-// 2. Persist ping quickly
         GpsPing ping = new GpsPing();
         ping.setDevice(deviceOpt.get());
         ping.setLat(dto.lat());
@@ -54,10 +51,8 @@ public class PingServiceImpl implements PingService {
         GpsPing saved = gpsPingRepository.save(ping);
 
 
-// 3. Enqueue for processing
-        tripProcessor.enqueue(saved);
-
-
+//  processing
+//        tripProcessor.enqueue(saved);
         return new PingResponseDto(saved.getPingId(), saved.getReceivedAt());
     }
 }

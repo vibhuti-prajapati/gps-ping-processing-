@@ -1,5 +1,7 @@
 package com.example.gpsfleet.entity;
 
+import com.example.gpsfleet.dto.request.CreateFleetDto;
+import com.example.gpsfleet.dto.request.CreateVehicleDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,7 +42,7 @@ public class Vehicle {
 
     @ManyToOne
     @JoinColumn(name = "driver_id")
-    private Driver driver;
+    private Driver driverId;
 
     @Column(unique = true)
     private String regNo;
@@ -50,4 +52,5 @@ public class Vehicle {
     private Boolean active = true;
 
     private Instant createdAt = Instant.now();
+
 }

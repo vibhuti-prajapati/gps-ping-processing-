@@ -1,7 +1,12 @@
 package com.example.gpsfleet.service.impl;
+import com.example.gpsfleet.dto.request.CreateVehicleDto;
 import com.example.gpsfleet.dto.response.VehicleLocationDto;
 import com.example.gpsfleet.entity.Device;
+import com.example.gpsfleet.entity.Driver;
+import com.example.gpsfleet.entity.Fleet;
 import com.example.gpsfleet.entity.Vehicle;
+import com.example.gpsfleet.repository.DriverRepository;
+import com.example.gpsfleet.repository.FleetRepository;
 import com.example.gpsfleet.repository.GpsPingRepository;
 import com.example.gpsfleet.repository.VehicleRepository;
 import com.example.gpsfleet.service.VehicleService;
@@ -16,14 +21,41 @@ public class VehicleServiceImpl implements VehicleService {
 
     private final VehicleRepository vehicleRepository;
     private final GpsPingRepository gpsPingRepository;
+    private final FleetRepository  fleetRepository;
+    private final DriverRepository driverRepository;
 
 
-    @Autowired
-    public VehicleServiceImpl(VehicleRepository vehicleRepository, GpsPingRepository gpsPingRepository) {
+    public VehicleServiceImpl(VehicleRepository vehicleRepository, GpsPingRepository gpsPingRepository, FleetRepository fleetRepository, DriverRepository driverRepository) {
         this.vehicleRepository = vehicleRepository;
         this.gpsPingRepository = gpsPingRepository;
+        this.fleetRepository= fleetRepository;
+        this.driverRepository = driverRepository;
     }
 
+
+    @Override
+    public String createVehicle(CreateVehicleDto vehicleDto) {
+
+        Fleet fleet = fleetRepository.findById(vehicleDto.fleetId())
+                .orElseThrow(() -> new IllegalArgumentException("Fleet not found"));
+
+        Driver driver = driverRepository.findById(vehicleDto.driverId())
+                .orElseThrow(() -> new IllegalArgumentException("Driver not found"));
+
+        Vehicle vehicle = new Vehicle();
+        vehicle.setFleetId(fleet);
+        vehicle.setDriverId(driver);
+        vehicle.setRegNo(vehicleDto.regNo());
+        vehicle.setModel(vehicleDto.model());
+        vehicleRepository.save(vehicle);
+
+        return "vehicle added";
+    }
+
+    @Override
+    public boolean existsById(Long fleetId) {
+        return false;
+    }
 
     @Override
     public VehicleLocationDto getLastLocation(Long vehicleId) {
