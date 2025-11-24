@@ -4,10 +4,11 @@ import com.example.gpsfleet.entity.Device;
 import com.example.gpsfleet.entity.Trip;
 import com.example.gpsfleet.entity.Vehicle;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
-
+@Repository
 public interface TripRepository extends JpaRepository<Trip, Long> {
 
     List<Trip> findByVehicleAndStartTimeBetweenOrderByStartTimeAsc(
@@ -16,5 +17,5 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
             Instant to
     );
 
-    Trip findTopByDeviceIdOrderByStartTimeDesc(Device device);
+    Trip findTopByDeviceOrderByStartTimeDesc(Device device);
 }

@@ -34,7 +34,8 @@ public class TripEvent {
     @JoinColumn(name = "trip_id")
     private Trip tripId;
     @Column(nullable = false)
-    private String eventType; // STOP, OVERSPEED, DEVIATION, IDLE
+    @Enumerated(EnumType.STRING)
+    private EventType eventType; // STOP, OVERSPEED, DEVIATION, IDLE
 
     @Column(nullable = false)
     private Instant startTime;

@@ -39,7 +39,8 @@ public class Alert {
     private GpsPing ping;
 
     @Column(nullable = false)
-    private String alertType; // OVERSPEED, DEVIATION, etc.
+    @Enumerated(EnumType.STRING)
+    private AlertType alertType; // OVERSPEED, DEVIATION, etc.
 
     private String message;
 

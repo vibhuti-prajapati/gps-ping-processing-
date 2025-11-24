@@ -52,7 +52,7 @@ public class PingServiceImpl implements PingService {
 
 
 //  processing
-//        tripProcessor.enqueue(saved);
+        tripProcessor.enqueue(saved);
         return new PingResponseDto(saved.getPingId(), saved.getReceivedAt());
     }
 }

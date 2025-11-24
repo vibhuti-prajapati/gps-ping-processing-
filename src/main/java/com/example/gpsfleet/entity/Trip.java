@@ -52,7 +52,7 @@ public class Trip {
 
     @ManyToOne
     @JoinColumn(name= "device_id")
-    private Device deviceId;
+    private Device device;
 
     @Column(name = "start_time", nullable = false)
     private Instant startTime;
@@ -73,7 +73,7 @@ public class Trip {
     private Double endLon;
 
     @Column(name = "total_distance_m")
-    private Long totalDistanceM = 0L;
+    private Double totalDistanceM;
 
     @Column(name = "total_duration_s")
     private Long totalDurationS = 0L;
