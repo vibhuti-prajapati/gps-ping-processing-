@@ -14,6 +14,13 @@ Backend system for real-time GPS fleet tracking, trip detection, alerts, geofenc
 - Modeling for fleets, vehicles, drivers, devices
 - Persistent Trip Events and Alerts tracking
 
+## WORK IN PROGRESS
+- Currently refining TripProcessor for cleaner architecture
+- Working on unit/integration tests for GPS ping processing
+- Stress/load testing queue & state engine for high throughput
+- Planning improvements to geofence & offline handling reliability
+- Code restructuring into rule classes for easier maintenance
+
 ## 🛠 Tech Stack
 | Layer | Technology |
 |--------|-------------|
@@ -109,20 +116,6 @@ Rules are checked in this order:
 
 ---
 
-## 🧪 Testing With Fake GPS Samples
-Example sequence for trip start + overspeed + idle + end:
-```json
-[ 
- {"lat":19.07,"lon":72.87,"speedKmh":0,"sentAt":"10:00:00Z"},
- {"lat":19.0703,"lon":72.8703,"speedKmh":20,"sentAt":"10:00:05Z"},
- {"lat":19.0715,"lon":72.8715,"speedKmh":130,"sentAt":"10:00:10Z"},
- {"lat":19.0715,"lon":72.8715,"speedKmh":0,"sentAt":"10:01:20Z"},
- {"lat":19.0715,"lon":72.8715,"speedKmh":0,"sentAt":"10:07:30Z"}
-]
-```
-
----
-
 ## 🧵 Concurrency
 - `LinkedBlockingQueue<GpsPing>` buffers incoming points
 - Single worker thread ensures deterministic state
@@ -138,9 +131,7 @@ Production expected: JWT + roles.
 
 ## 💡 Future Improvements
 - Polygon geofences
-- Driver scoring
 - Kafka stream processing
-- Redis caching for state store
 - GraphQL / Websocket live location streaming
 - Fleet dashboards & reports UI
 
