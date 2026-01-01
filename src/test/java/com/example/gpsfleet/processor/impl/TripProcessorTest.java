@@ -1,4 +1,4 @@
-package com.example.gpsfleet.service.impl;
+package com.example.gpsfleet.processor.impl;
 
 import com.example.gpsfleet.entity.Device;
 import com.example.gpsfleet.entity.GpsPing;
@@ -6,7 +6,7 @@ import com.example.gpsfleet.repository.AlertRepository;
 import com.example.gpsfleet.repository.DeviceRepository;
 import com.example.gpsfleet.repository.GpsPingRepository;
 import com.example.gpsfleet.repository.TripRepository;
-import com.example.gpsfleet.service.TripProcessor;
+import com.example.gpsfleet.processor.TripProcessor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -139,24 +140,16 @@ class TripProcessorTest {
             p8.setHeading(0.0);
             p8.setSentAt(base.plusSeconds(500));
 
-            pingRepository.save(p1);
             tripProcessor.enqueue(p1);
-            pingRepository.save(p2);
             tripProcessor.enqueue(p2);
-            pingRepository.save(p3);
             tripProcessor.enqueue(p3);
-            pingRepository.save(p4);
             tripProcessor.enqueue(p4);
-            pingRepository.save(p5);
             tripProcessor.enqueue(p5);
-            pingRepository.save(p6);
             tripProcessor.enqueue(p6);
-            pingRepository.save(p7);
             tripProcessor.enqueue(p7);
-            pingRepository.save(p8);
             tripProcessor.enqueue(p8);
             // give processor thread time to process queue
-            Thread.sleep(1000);
+//            Thread.sleep(1000);
 
             assertThat(tripRepository.count()).isEqualTo(count + 1);
         }

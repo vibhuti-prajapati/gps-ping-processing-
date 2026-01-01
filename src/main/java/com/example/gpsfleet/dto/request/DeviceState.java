@@ -1,6 +1,7 @@
 package com.example.gpsfleet.dto.request;
 
 import com.example.gpsfleet.entity.GpsPing;
+import com.example.gpsfleet.entity.Status;
 import lombok.*;
 
 import java.time.Instant;
@@ -21,5 +22,7 @@ public class DeviceState {
     private Double lastLon;
     private Long currentIdleEventId;
     private int movementCounter;
-
+    private boolean insideGeofence;
+    private Status status=Status.ONLINE;
+    private double  distanceCovered;
 }

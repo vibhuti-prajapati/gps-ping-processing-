@@ -1,4 +1,4 @@
-package com.example.gpsfleet.service;
+package com.example.gpsfleet.processor;
 
 import com.example.gpsfleet.entity.GpsPing;
 

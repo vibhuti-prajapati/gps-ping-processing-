@@ -1,24 +1,22 @@
-package com.example.gpsfleet.service.impl;
+package com.example.gpsfleet.processor.impl;
 
 
 import com.example.gpsfleet.dto.request.DeviceState;
-import com.example.gpsfleet.dto.response.AlertDriverDto;
-import com.example.gpsfleet.dto.response.AlertDto;
 import com.example.gpsfleet.entity.*;
-import com.example.gpsfleet.repository.AlertRepository;
-import com.example.gpsfleet.repository.TripEventRepository;
-import com.example.gpsfleet.repository.TripRepository;
-import com.example.gpsfleet.service.TripProcessor;
-import com.example.gpsfleet.repository.GpsPingRepository;
+import com.example.gpsfleet.repository.*;
+import com.example.gpsfleet.processor.TripProcessor;
+import com.example.gpsfleet.util.DistanceCalcService;
+import com.example.gpsfleet.util.ReverseGeoCodingService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.*;
 
 @Component
@@ -31,18 +29,22 @@ public class TripProcessorImpl implements TripProcessor {
     private volatile boolean running = false;
     private final ReverseGeoCodingService reverseGeocodingService;
     private final TripRepository tripRepository;
-    private final AlertRepository alertRepository;
+    private final AlertRepository alertRepository; 
+    private final GeoFenceRepository geoFenceRepository;
+    private final GpsPingRepository gpsPingRepository;
     @Autowired
-    public TripProcessorImpl(TripRepository tripRepository, AlertRepository alertRepository, ReverseGeoCodingService reverseGeocodingService, TripEventRepository tripEventRepository) {
+    public TripProcessorImpl(TripRepository tripRepository, AlertRepository alertRepository, ReverseGeoCodingService reverseGeocodingService, TripEventRepository tripEventRepository,GeoFenceRepository geoFenceRepository, GpsPingRepository gpsPingRepository) {
         this.tripRepository = tripRepository;
         this.alertRepository = alertRepository;
         this.reverseGeocodingService = reverseGeocodingService;
         this.tripEventRepository = tripEventRepository;
+        this.geoFenceRepository = geoFenceRepository;
+        this.gpsPingRepository = gpsPingRepository;
     }
+    private List<Geofence> fences;
 
     @Value("${trip.processor.enabled:true}")
     private boolean autoStart;
-
     @Override
     public void enqueue(GpsPing ping) {
         queue.offer(ping);
@@ -62,6 +64,8 @@ public class TripProcessorImpl implements TripProcessor {
                 try {
                     GpsPing ping = queue.poll(1, TimeUnit.SECONDS);
                     if (ping == null) continue;
+                    gpsPingRepository.save(ping);
+                    loadFences(ping);
                     process(ping);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -72,17 +76,24 @@ public class TripProcessorImpl implements TripProcessor {
         });
     }
 
+    private void loadFences(GpsPing ping) {
+        fences = geoFenceRepository.findByFleet(ping.getDevice().getVehicle().getFleet());
+    }
+
     private void process(GpsPing ping) {
         String deviceId = ping.getDevice().getDeviceId();
-
         // get existing state or create a new one
         DeviceState state = deviceStateMap.get(deviceId);
         if (state == null) {
             state = new DeviceState();
             deviceStateMap.put(deviceId, state);
         }
-        GpsPing lastPing = state.getLastPing();
-
+        if (state.getStatus() == Status.OFFLINE) {
+            state.setStatus(Status.ONLINE);
+            System.out.println("🔵 Device back online: " + ping.getDevice().getDeviceId());
+        }
+        System.out.println("ping sent at : "+ping.getSentAt()+" Ping received at : " +ping.getReceivedAt() );
+        System.out.println("device status when received : "+state.getStatus());
         double speed = safeSpeed(ping);
 
         // movementCounter for THIS ping so checkTripStart sees it
@@ -101,17 +112,48 @@ public class TripProcessorImpl implements TripProcessor {
                     ping.getLat(), ping.getLon(),
                     state.getLastLat(), state.getLastLon()
             );
-            System.out.println("distance from last :" + distanceFromLast);
+            double distance = state.getDistanceCovered()+distanceFromLast;
+            if (state.isInTrip() && distanceFromLast > 0.3) {   // ignore noise < 0.3m
+                state.setDistanceCovered(state.getDistanceCovered() + distanceFromLast);
+            }
         }
 
         checkTripStart(ping, state, distanceFromLast, speed);
         checkTripEnd(ping, state, distanceFromLast,speed);
         checkOverspeed(ping, state, speed);
         checkIdleTime(ping, state, speed, distanceFromLast);
+        if(fences !=null){
+            for(Geofence fence: fences ){
+                checkGeofence(fence,ping,state);
+            }
+        }
+
         // update with current ping
         updateState(ping,state);
         state.setLastPing(ping);
+    }
 
+    private void checkGeofence(Geofence fence,GpsPing ping, DeviceState state) {
+        double distance =  DistanceCalcService.haversine(ping.getLat(),ping.getLon(),fence.getCenterLat(),fence.getCenterLon() );
+        boolean currently = distance <= fence.getRadiusMeters();
+        if(!state.isInsideGeofence() && currently){
+            state.setInsideGeofence(true);
+            Alert alert = new Alert();
+            alert.setVehicle(ping.getDevice().getVehicle());
+            alert.setPing(ping);
+            alert.setAlertType(AlertType.GEOFENCE_ENTER);
+            alert.setMessage("device with id:"+ping.getDevice().getDeviceId()+" has entered the set perimeters");
+            alertRepository.save(alert);
+        }
+        if(state.isInsideGeofence() && !currently){
+            state.setInsideGeofence(false);
+            Alert alert = new Alert();
+            alert.setVehicle(ping.getDevice().getVehicle());
+            alert.setPing(ping);
+            alert.setAlertType(AlertType.GEOFENCE_EXIT);
+            alert.setMessage("device with id:"+ping.getDevice().getDeviceId()+" crossed the set perimeters");
+            alertRepository.save(alert);
+        }
     }
 
     private double safeSpeed(GpsPing ping) {
@@ -126,7 +168,6 @@ public class TripProcessorImpl implements TripProcessor {
             );
             if (distance > 10) {
                 state.setLastMovementTime(ping.getSentAt());
-                System.out.println("last movement time: " + state.getLastMovementTime());
             }
         }
 
@@ -190,16 +231,12 @@ public class TripProcessorImpl implements TripProcessor {
     }
 
     private void checkTripEnd(GpsPing ping, DeviceState state,double distanceFromLast, double speed) {
-        System.out.println("check if in trip : " +state.isInTrip());
         if (state.isInTrip()) {
             boolean stationary = ping.getSpeedKmh() != null && ping.getSpeedKmh() < 2;
-            System.out.println("stationary: " + stationary);
             if (stationary) {
                 if (state.getLastMovementTime().plusSeconds(360).isBefore(ping.getSentAt())) {
                     Trip trip = tripRepository.findById(state.getCurrentTripId()).orElseThrow();
-                    System.out.println("trip coordinates start : " + trip.getStartLat() +"," + trip.getStartLon());
-                    double distance = DistanceCalcService.haversine( trip.getStartLat(), trip.getStartLon() , ping.getLat(), ping.getLon());
-                    trip.setTotalDistanceM(distance/1000);
+                    trip.setTotalDistanceM(state.getDistanceCovered());
                     trip.setEndTime(ping.getSentAt());
                     trip.setEndLat(ping.getLat());
                     trip.setEndLon(ping.getLon());
@@ -209,6 +246,7 @@ public class TripProcessorImpl implements TripProcessor {
                     state.setInTrip(false);
                     state.setCurrentTripId(null);
                     state.setMovementCounter(0);
+                    state.setDistanceCovered(0.0);
                     System.out.println("⛔ Trip ended for device " + ping.getDevice().getDeviceId());
                 }
             } else {
@@ -223,6 +261,7 @@ public class TripProcessorImpl implements TripProcessor {
                 && state.getMovementCounter() >= 2
                 && speed > 2.0 ) {
                 if(distanceFromLast > 30) {
+                    state.setDistanceCovered(0.0);
                     Trip trip = new Trip();
                     trip.setVehicle(ping.getDevice().getVehicle());
                     trip.setDevice(ping.getDevice());
@@ -253,6 +292,36 @@ public class TripProcessorImpl implements TripProcessor {
         }
 }
 
+@Scheduled(fixedDelay = 60000)
+    public void checkOfflineDevices() {
+    System.out.println("checking devices");
+    Instant now = Instant.now();
+    for (Map.Entry<String, DeviceState> entry : deviceStateMap.entrySet()) {
+        DeviceState state = entry.getValue();
+        System.out.println("checking out device : "+entry.getKey() + " status is: " +state.getStatus());
+        if (state == null || state.getLastPing() == null) continue;
+        Instant last = state.getLastPing().getReceivedAt();
+        boolean offline = last.plusSeconds(180).isBefore(now);
+        System.out.println("boolean offline : " + offline + " last time : " + last );
+        if (offline && state.getStatus() != Status.OFFLINE) {
+            state.setStatus(Status.OFFLINE);
+            state.setIdle(false);
+            state.setIdleStartTime(null);
+            state.setMovementCounter(0);
+            Alert alert = new Alert();
+            alert.setVehicle(state.getLastPing().getDevice().getVehicle());
+            alert.setPing(state.getLastPing());
+            alert.setAlertType(AlertType.OFFLINE);
+            alert.setMessage("device offline at" + now);
+            System.out.println("🔴 Device went offline " + state.getLastPing().getDevice().getDeviceId());
+            alertRepository.save(alert);
+        } else {
+            if (!offline && state.getStatus() != Status.ONLINE) {
+                state.setStatus(Status.ONLINE);
+            }
+        }
+    }
+}
     @PreDestroy
     @Override
     public void stop() {
@@ -266,5 +335,7 @@ public class TripProcessorImpl implements TripProcessor {
     void processDirect(GpsPing ping) {
         process(ping);
     }
-
+    public DeviceState getCurrentState(String deviceId) {
+        return deviceStateMap.get(deviceId);
+    }
 }

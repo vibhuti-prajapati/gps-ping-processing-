@@ -1,13 +1,10 @@
 package com.example.gpsfleet.controller;
 
 import com.example.gpsfleet.dto.request.CreateVehicleDto;
-import com.example.gpsfleet.service.impl.FleetServiceImpl;
+import com.example.gpsfleet.dto.response.VehicleLocationDto;
 import com.example.gpsfleet.service.impl.VehicleServiceImpl;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/gps/vehicle")
@@ -21,5 +18,9 @@ public class VehicleController {
     public ResponseEntity<?> createVehicle(@RequestBody CreateVehicleDto vehicleDto) {
         System.out.println(vehicleDto.fleetId()+vehicleDto.model());
     return  ResponseEntity.ok(vehicleService.createVehicle(vehicleDto));
+    }
+    @PostMapping("/live-location")
+    public ResponseEntity<VehicleLocationDto> getLiveLocation(@RequestBody long vehicleId) {
+        return ResponseEntity.ok(vehicleService.getLastLocation(vehicleId));
     }
 }

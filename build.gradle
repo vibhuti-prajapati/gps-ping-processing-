@@ -40,7 +40,6 @@ dependencies {
 	testImplementation 'io.rest-assured:json-schema-validator:5.4.0'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testImplementation 'com.h2database:h2'
-
 }
 
 tasks.named('test') {

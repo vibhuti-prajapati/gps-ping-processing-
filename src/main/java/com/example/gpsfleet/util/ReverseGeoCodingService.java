@@ -1,6 +1,5 @@
-package com.example.gpsfleet.service.impl;
+package com.example.gpsfleet.util;
 
-import jdk.jfr.RecordingState;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;

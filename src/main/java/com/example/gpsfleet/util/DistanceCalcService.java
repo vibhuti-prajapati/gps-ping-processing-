@@ -1,11 +1,10 @@
-package com.example.gpsfleet.service.impl;
+package com.example.gpsfleet.util;
 
 import org.springframework.stereotype.Service;
 
 @Service
 public class DistanceCalcService {
     public static double haversine(double lat1, double lon1, double lat2, double lon2) {
-        System.out.println(lat1 + " " + lon1 + " " + lat2 + " " + lon2);
         if(lat2!=0 || lon2 !=0 ||lat1!=0 || lon1 !=0){
         final int R = 6371;
         double Dlat = Math.toRadians(lat2 - lat1);

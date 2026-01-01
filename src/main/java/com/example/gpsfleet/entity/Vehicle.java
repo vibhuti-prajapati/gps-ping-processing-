@@ -38,7 +38,7 @@ public class Vehicle {
 
     @ManyToOne
     @JoinColumn(name = "fleet_id")
-    private Fleet fleetId;
+    private Fleet fleet;
 
     @ManyToOne
     @JoinColumn(name = "driver_id")

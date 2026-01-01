@@ -7,7 +7,7 @@ import com.example.gpsfleet.entity.GpsPing;
 import com.example.gpsfleet.repository.DeviceRepository;
 import com.example.gpsfleet.repository.GpsPingRepository;
 import com.example.gpsfleet.service.PingService;
-import com.example.gpsfleet.service.TripProcessor;
+import com.example.gpsfleet.processor.TripProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,11 +48,9 @@ public class PingServiceImpl implements PingService {
         ping.setSpeedKmh(dto.speedKmh());
         ping.setHeading(dto.heading());
         ping.setSentAt(dto.sentAt());
-        GpsPing saved = gpsPingRepository.save(ping);
-
 
 //  processing
-        tripProcessor.enqueue(saved);
-        return new PingResponseDto(saved.getPingId(), saved.getReceivedAt());
+        tripProcessor.enqueue(ping);
+        return new PingResponseDto(ping.getPingId(), ping.getReceivedAt());
     }
 }

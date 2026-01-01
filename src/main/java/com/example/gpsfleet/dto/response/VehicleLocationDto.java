@@ -1,36 +1,50 @@
 package com.example.gpsfleet.dto.response;
 
+import com.example.gpsfleet.entity.Status;
+
 import java.time.Instant;
 
 public record VehicleLocationDto(
-        Long vehicleId,
-        double lat,
-        double lon,
-        Double speedKmh,
-        Instant lastUpdate
+        long vehicleId,
+        double lastLat,
+        double lastLon,
+        String lastKnownLocation,
+        Instant lastMovement,
+        boolean isInTrip,
+        Status status
 ) {
     @Override
-    public Long vehicleId() {
+    public long vehicleId() {
         return vehicleId;
     }
 
     @Override
-    public double lat() {
-        return lat;
+    public double lastLat() {
+        return lastLat;
     }
 
     @Override
-    public double lon() {
-        return lon;
+    public double lastLon() {
+        return lastLon;
     }
 
     @Override
-    public Double speedKmh() {
-        return speedKmh;
+    public String lastKnownLocation() {
+        return lastKnownLocation;
     }
 
     @Override
-    public Instant lastUpdate() {
-        return lastUpdate;
+    public Instant lastMovement() {
+        return lastMovement;
+    }
+
+    @Override
+    public boolean isInTrip() {
+        return isInTrip;
+    }
+
+    @Override
+    public Status status() {
+        return status;
     }
 }
